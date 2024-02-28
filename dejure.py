@@ -10,7 +10,7 @@ from docx import Document
 
 db_path = r'data\\staff_db.db'
 
-schedule = [
+schedule = (
     '02.03.2024',
     'Жмыров Д',
     'Дюкова Н',
@@ -80,7 +80,7 @@ schedule = [
     'Васильева Ю',
     'Булгакова Е',
     'Кириллова Н',
-]
+)
 
 def handle_csv():
 
@@ -145,6 +145,22 @@ def create_table_row(person: tuple, date: str):
         'job':job,
         'date':date
     }
+
+def create_schedule_rows():
+    schedule_rows = []
+    for line in schedule:
+        if line[0] in ('0', '1', '2', '3'):
+            date = line
+            continue
+        else:
+            person_record = search_person(line)
+            table_row = create_table_row(person=person_record, date=date)
+            schedule_rows.append(table_row)
+    return tuple(schedule_rows)
+
+def create_schedule_dict():
+    for line in schedule:
+        pass
 
 if __name__ == '__main__':
     
