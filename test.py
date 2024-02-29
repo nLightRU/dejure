@@ -1,6 +1,6 @@
 import sqlite3
 
-from dejure import Database
+from database import Database
 from schedule import Schedule
 
 def create_test_db():

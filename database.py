@@ -5,6 +5,8 @@
 import csv
 import sqlite3
 
+from typing import Dict
+
 db_path = r'data\\staff_db.db'
 
 
@@ -37,7 +39,6 @@ def handle_csv():
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
-    
 
 
     def create_tables(self):
@@ -66,7 +67,7 @@ class Database:
                 cur.execute("INSERT INTO staff(first_name, last_name, patronymic, job) VALUES (?,?,?,?)", data)
             conn.commit()
 
-    def search_person(self, search_str: str):
+    def search_person(self, search_str: str) -> Dict:
 
         if self.db_name is None:
             raise ValueError('DB Name cannot be None')
@@ -83,12 +84,24 @@ class Database:
             
             for row in res:
                 if first_name in row[1]:
-                    return row
-        
+                    return {
+                        "first_name": row[1],
+                        'last_name': row[2],
+                        "patronymic": row[3], 
+                        'job': row[4]
+                    }
 
-    def create_table_row(self, person: tuple, date: str):
-        name = person[2] + ' ' + person[1][0] + '.' + person[3][0] + '.'
-        job = person[4][0].upper() + person[4][1:]
+    def get_short_job(self, person: Dict) -> str:
+        job = person['job'].lower()
+        short_jobs = ('тер', 'хир', 'гард', 'сес', 'уб', 'орт')
+        for short_job in short_jobs:
+            if short_job in job:
+                return short_job + '.'
+            
+
+    def create_table_row(self, person: Dict, date: str):
+        name = person['last_name'] + ' ' + person['first_name'][0] + '.' + person['patronymic'][0] + '.'
+        job = person['job'][0].upper() + person['job'][1:]
         return {
             'name': name, 
             'job':job,
