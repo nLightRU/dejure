@@ -160,5 +160,7 @@ cython_debug/
 #.idea/
 
 out.xlsx
+*.docx
 demo_*
 data/*
+test_database.db

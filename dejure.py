@@ -109,7 +109,7 @@ def create_db(dbname: str, create_scipt):
     with sqlite3.connect(dbname) as conn:
         cur = conn.cursor()
         cur.executescript(create_scipt)
- 
+
 
 def insert_from_csv(f: str, db: str):
     with sqlite3.connect(db) as conn, open(f, 'r', encoding='utf-8') as csv_in:
@@ -120,8 +120,12 @@ def insert_from_csv(f: str, db: str):
             cur.execute("INSERT INTO staff(first_name, last_name, patronymic, job) VALUES (?,?,?,?)", data)
         conn.commit()
 
-def search_person(name: str):
-    with sqlite3.connect(db_path) as conn:
+def search_person(name: str, db_name=None):
+
+    if db_name is None:
+        raise ValueError('DB Name cannot be None')
+
+    with sqlite3.connect(db_name) as conn:
         try:
             last_name, first_name = name.split()
         except ValueError:
@@ -130,12 +134,11 @@ def search_person(name: str):
         res = cur.execute('SELECT * FROM staff WHERE last_name=?', (last_name,)).fetchall()
         if res is None:
             raise Exception(f'Not found {name}')
-        if len(res) > 1:
-            for row in res:
-                if first_name in row[1]:
-                    return row
-        else:
-            return res[0]
+        
+        for row in res:
+            if first_name in row[1]:
+                return row
+        
 
 def create_table_row(person: tuple, date: str):
     name = person[2] + ' ' + person[1][0] + '.' + person[3][0] + '.'
