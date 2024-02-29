@@ -47,7 +47,10 @@ def test_schedule():
         '02.01.2024',
         'Кирсанов П',
         'Кукшина А',
-        'Иванов И'
+        'Иванов И',
+        '03.01.2024',
+        'Базаров Е',
+        'Одинцова А'
     )
     return test_schedule
 
@@ -62,3 +65,4 @@ def test_generate_schedule_with_pay(test_schedule, test_db):
     sc.register_database(test_db)
 
     sc.generate_schedule_with_pay()
+    sc.generate_schedule_table()

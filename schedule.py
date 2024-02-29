@@ -2,9 +2,10 @@
     Docx generation module
 """
 
-from typing import Dict
+from typing import Tuple, Dict
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
 from database import Database
@@ -14,6 +15,23 @@ class Schedule:
         self.schedule = schedule_data
         self.db = None
         self.days_num = 0
+        for row in schedule_data:
+            if row[0] in ('0', '1', '2', '3'):
+                self.days_num += 1
+        
+        months = ('', 
+                  'январь', 'февраль', 'март',
+                  'апрель', 'май', 'июнь',
+                  'июль', 'август', 'сентябрь',
+                  'октябрь', 'ноябрь', 'декабрь',
+        )
+
+        if schedule_data[0][3] == '0':
+            month_num = int(schedule_data[0][4])
+        else:
+            month_num = int(schedule_data[0][3:4])
+        self.month = months[month_num]
+        
 
     def register_database(self, database: Database):
         self.db = database
@@ -44,7 +62,6 @@ class Schedule:
         for line in self.schedule:
             if line[0] in ('0', '1', '2', '3'):
                 date = line
-                self.days_num += 1
                 continue
             else:
                 person_record = self.db.search_person(line)
@@ -52,6 +69,33 @@ class Schedule:
                 schedule_rows.append(table_row)
         return tuple(schedule_rows)
     
+    def __create_schedule_days(self) -> Tuple[Dict]:
+        schedule_rows = self.__create_schedule_rows()
+        dates = []
+        days = []
+
+        # creating list with duty dates without persons
+        # list dates is needed for filtering same dates
+        for schedule_row in schedule_rows:
+            if schedule_row['date'] not in dates:
+                dates.append(schedule_row['date'])
+                days.append(
+                    {
+                        'date': schedule_row['date'],
+                        'persons': []
+                    }
+                )
+        
+        # adding person to a specific day in days list
+        for schedule_row in schedule_rows:
+            for day in days:
+                if schedule_row['date'] == day['date']:
+                    s = f"{schedule_row['name']} - {schedule_row['job_short']}"
+                    day['persons'].append(s)
+
+
+        return tuple(days)
+
     def generate_schedule_with_pay(self, filename='demo_pay.docx') -> None:
         schedule_rows = self.__create_schedule_rows()
             
@@ -82,21 +126,40 @@ class Schedule:
 
         document = Document()
         
-        heading = document.add_heading('График дежурств', level=1)
+        heading_text = f'График дежурств на {self.month}'
+        heading = document.add_heading(heading_text, level=1)
         heading.alignment = WD_TABLE_ALIGNMENT.CENTER
         
-        table = document.add_table(rows=1, cols=2)
+
+        if self.days_num % 2 == 0:
+            t_rows = int(self.days_num / 2)
+        else:
+            t_rows = int(self.days_num / 2) + 1
+        
+        table = document.add_table(rows=t_rows, cols=2)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.style = 'Table Grid'
-        for i in range(self.days_num - 1):
-            row_cells = table.rows[i].cells
+
+        days = self.__create_schedule_days()
+        text = f'test {self.days_num}'
+        col_idx, row_idx = 0, 0
+        for day in days:
+            cell = table.cell(row_idx, col_idx)
+            if col_idx == 1:
+                row_idx += 1
+                col_idx = 0
+            else:
+                col_idx = 1
+            date_text = cell.add_paragraph(day['date'])
+            date_text.style = document.styles['Heading 2']
+            date_text.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            start = 1
+            for p in day['persons']:
+                text = str(start) + '.' + '  ' + p
+                cell.add_paragraph(text)
+                start += 1
             
-            row_cells[0].add_paragraph('first', style='List Number')
-           
-            row_cells[1].add_paragraph('first', style='List Number')
-            
-            
-            table.add_row()
+          
             
         document.save(filename)
         

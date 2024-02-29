@@ -96,7 +96,7 @@ class Database:
         short_jobs = ('тер', 'хир', 'гард', 'сес', 'уб', 'орт')
         for short_job in short_jobs:
             if short_job in job:
-                return short_job + '.'
+                return 'м/с.' if short_job == 'сес' else short_job + '.'
             
 
 if __name__ == '__main__':
