@@ -4,12 +4,10 @@
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
-from dejure import schedule, search_person, create_table_row, create_schedule_rows
-
 class Schedule:
-    def __init__(self, schedule_data, db_name):
+    def __init__(self, schedule_data, database):
         self.schedule = schedule_data
-        self.db = db_name
+        self.db = database
 
     def __create_schedule_rows(self):
         schedule_rows = []
@@ -18,8 +16,8 @@ class Schedule:
                 date = line
                 continue
             else:
-                person_record = search_person(line, db_name=self.db)
-                table_row = create_table_row(person=person_record, date=date)
+                person_record = self.db.search_person(line)
+                table_row = self.db.create_table_row(person=person_record, date=date)
                 schedule_rows.append(table_row)
         return tuple(schedule_rows)
     

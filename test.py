@@ -1,7 +1,6 @@
 import sqlite3
 
-from dejure import search_person, create_table_row
-
+from dejure import Database
 from schedule import Schedule
 
 def create_test_db():
@@ -48,6 +47,7 @@ if __name__ == '__main__':
         'Иванов И'
     )
 
-    sc = Schedule(test_schedule, db_name='test_database.db')
+    db = Database('test_database.db')
+    sc = Schedule(test_schedule, database=db)
     sc.generate_schedule_table()
     sc.generate_schedule_with_pay()

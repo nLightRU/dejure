@@ -1,6 +1,6 @@
 from schedule import Schedule
 
-schedule_march = (
+schedule_current = (
     '02.03.2024',
     'Жмыров Д',
     'Дюкова Н',
@@ -73,6 +73,6 @@ schedule_march = (
 )
 
 if __name__ == '__main__':
-    schedule = Schedule(schedule_data=schedule_march)
+    schedule = Schedule(schedule_data=schedule_current)
     schedule.generate_schedule_table()
     schedule.generate_schedule_with_pay()

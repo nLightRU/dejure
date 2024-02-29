@@ -3,86 +3,16 @@
 """
 
 import csv
-import os
 import sqlite3
-
-from docx import Document
 
 db_path = r'data\\staff_db.db'
 
-schedule = (
-    '02.03.2024',
-    'Жмыров Д',
-    'Дюкова Н',
-    'Коломлина Г',
-    '03.03.2024',
-    'Коруняк А',
-    'Панарина О',
-    'Старкова Т',
-    'Романова Е',
-    'Макарова Е',
-    'Щербакова Л',
-    'Кириллова Н',
-    '08.03.2024',
-    'Антипова Г',
-    'Винокурова И',
-    'Кирюшина О',
-    '09.03.2024',
-    'Попов В',
-    'Анциферова Н',
-    'Буланкина Л',
-    'Павлова Т',
-    'Булгакова Е',
-    'Титова О',
-    'Селянин А',
-    'Седова Т',
-    'Ненашева З',
-    '10.03.2024',
-    'Новиков А',
-    'Перегудова Т',
-    'Кульбашная И',
-    '16.03.2024',
-    'Незнанова К',
-    'Винокурова И',
-    'Попова Л',
-    '17.03.2024',
-    'Ворожейкин В',
-    'Павлов Д',
-    'Ломакина Т',
-    'Корягина Н',
-    'Мухортова Т',
-    'Кочергина Н',
-    'Кириллова Н',
-    '23.03.2024',
-    'Караваева Е',
-    'Сенчихина Е',
-    'Григорьева Н',
-    'Винокурова И',
-    'Четырина Н',
-    'Сажнева С',
-    'Титова О',
-    'Ремезов А',
-    'Хмырова Ю',
-    'Сафонова Н',
-    '24.03.2024',
-    'Чеканов С',
-    'Романова Е',
-    'Плотникова Т',
-    '30.03.2024',
-    'Некрасова А',
-    'Попова О',
-    'Архипова С',
-    '31.03.2024',
-    'Ворожейкин В',
-    'Жмыров Д',
-    'Ковальская Т',
-    'Буланкина Л',
-    'Васильева Ю',
-    'Булгакова Е',
-    'Кириллова Н',
-)
 
 def handle_csv():
+    """
+        CSV IN format
+        LAST NAME FIRST NAME PATRON;BIRTH;JOB
+    """
 
     def split_fio(s: str):
         names = s.split()
@@ -103,67 +33,68 @@ def handle_csv():
                 data = { 'last_name': names['last_name'], 'first_name': names['first_name'], 
                           'patronymic':names['patronymic'], 'birth':row['birth'], 'job':row['position']}
                 writer.writerow(data)
-                
 
-def create_db(dbname: str, create_scipt):
-    with sqlite3.connect(dbname) as conn:
-        cur = conn.cursor()
-        cur.executescript(create_scipt)
+class Database:
+    def __init__(self, db_name):
+        self.db_name = db_name
+    
 
 
-def insert_from_csv(f: str, db: str):
-    with sqlite3.connect(db) as conn, open(f, 'r', encoding='utf-8') as csv_in:
-        cur = conn.cursor()
-        reader = csv.DictReader(csv_in)
-        for row in reader:
-            data = (row['first_name'], row['last_name'], row['patronymic'], row['job'])
-            cur.execute("INSERT INTO staff(first_name, last_name, patronymic, job) VALUES (?,?,?,?)", data)
-        conn.commit()
+    def create_tables(self):
+        create_scipt = '''
+        CREATE TABLE "staff" (
+            "id"	INTEGER NOT NULL UNIQUE,
+            "first_name"	TEXT NOT NULL,
+            "last_name"	TEXT NOT NULL,
+            "patronymic"	TEXT,
+            "job"	TEXT NOT NULL,
+            PRIMARY KEY("id" AUTOINCREMENT)
+            )
+        '''
 
-def search_person(name: str, db_name=None):
+        with sqlite3.connect(self.db_name) as conn:
+            cur = conn.cursor()
+            cur.executescript(create_scipt)
 
-    if db_name is None:
-        raise ValueError('DB Name cannot be None')
 
-    with sqlite3.connect(db_name) as conn:
-        try:
-            last_name, first_name = name.split()
-        except ValueError:
-            print(f'Error with {name}')
-        cur = conn.cursor()
-        res = cur.execute('SELECT * FROM staff WHERE last_name=?', (last_name,)).fetchall()
-        if res is None:
-            raise Exception(f'Not found {name}')
+    def insert_from_csv(self, f: str):
+        with sqlite3.connect(self.db_name) as conn, open(f, 'r', encoding='utf-8') as csv_in:
+            cur = conn.cursor()
+            reader = csv.DictReader(csv_in)
+            for row in reader:
+                data = (row['first_name'], row['last_name'], row['patronymic'], row['job'])
+                cur.execute("INSERT INTO staff(first_name, last_name, patronymic, job) VALUES (?,?,?,?)", data)
+            conn.commit()
+
+    def search_person(self, search_str: str):
+
+        if self.db_name is None:
+            raise ValueError('DB Name cannot be None')
+
+        with sqlite3.connect(self.db_name) as conn:
+            try:
+                last_name, first_name = search_str.split()
+            except ValueError:
+                print(f'Error with {search_str}')
+            cur = conn.cursor()
+            res = cur.execute('SELECT * FROM staff WHERE last_name=?', (last_name,)).fetchall()
+            if res is None:
+                raise Exception(f'Not found {search_str}')
+            
+            for row in res:
+                if first_name in row[1]:
+                    return row
         
-        for row in res:
-            if first_name in row[1]:
-                return row
-        
 
-def create_table_row(person: tuple, date: str):
-    name = person[2] + ' ' + person[1][0] + '.' + person[3][0] + '.'
-    job = person[4][0].upper() + person[4][1:]
-    return {
-        'name': name, 
-        'job':job,
-        'date':date
-    }
+    def create_table_row(self, person: tuple, date: str):
+        name = person[2] + ' ' + person[1][0] + '.' + person[3][0] + '.'
+        job = person[4][0].upper() + person[4][1:]
+        return {
+            'name': name, 
+            'job':job,
+            'date':date
+        }
 
-def create_schedule_rows():
-    schedule_rows = []
-    for line in schedule:
-        if line[0] in ('0', '1', '2', '3'):
-            date = line
-            continue
-        else:
-            person_record = search_person(line)
-            table_row = create_table_row(person=person_record, date=date)
-            schedule_rows.append(table_row)
-    return tuple(schedule_rows)
-
-def create_schedule_dict():
-    for line in schedule:
-        pass
 
 if __name__ == '__main__':
     
