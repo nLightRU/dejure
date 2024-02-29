@@ -99,16 +99,6 @@ class Database:
                 return short_job + '.'
             
 
-    def create_table_row(self, person: Dict, date: str):
-        name = person['last_name'] + ' ' + person['first_name'][0] + '.' + person['patronymic'][0] + '.'
-        job = person['job'][0].upper() + person['job'][1:]
-        return {
-            'name': name, 
-            'job':job,
-            'date':date
-        }
-
-
 if __name__ == '__main__':
     
     print('dejure module')

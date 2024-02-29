@@ -163,4 +163,4 @@ out.xlsx
 *.docx
 demo_*
 data/*
-test_database.db
+db_test.db
