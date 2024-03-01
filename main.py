@@ -1,4 +1,5 @@
 from schedule import Schedule
+from database import Database
 
 schedule_current = (
     '02.03.2024',
@@ -73,6 +74,9 @@ schedule_current = (
 )
 
 if __name__ == '__main__':
+    db_path = r'data\\staff_db.db'
     schedule = Schedule(schedule_data=schedule_current)
+    database = Database(db_path)
+    schedule.register_database(database)
     schedule.generate_schedule_table()
     schedule.generate_schedule_with_pay()
