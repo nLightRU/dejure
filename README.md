@@ -1,1 +1,1 @@
-Using [python-docx](https://python-docx.readthedocs.io/en/latest/), sqlite3, and want to use any CLI lib
+Using [python-docx](https://python-docx.readthedocs.io/en/latest/) and [sqlite3](https://docs.python.org/3/library/sqlite3.html)
