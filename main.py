@@ -1,7 +1,9 @@
+from pathlib import Path
+
 from schedule import Schedule
 from database import Database
 
-schedule_current = (
+schedule_current_1 = (
     '02.03.2024',
     'Жмыров Д',
     'Дюкова Н',
@@ -73,10 +75,20 @@ schedule_current = (
     'Кириллова Н',
 )
 
+schedule_current = (
+    '06.04.2024',
+    'Павлов Д',
+    'Дюкова Н',
+    'Кирюшина О',
+    '07.04.2024',
+    'Ворожейкин В',
+    'Дильдина О',
+)
+
 if __name__ == '__main__':
-    db_path = r'data\\staff_db.db'
+    db_path = r'res\\staff_db.db'
     schedule = Schedule(schedule_data=schedule_current)
     database = Database(db_path)
     schedule.register_database(database)
-    schedule.generate_schedule_table()
-    schedule.generate_schedule_with_pay()
+    schedule.generate_schedule_table(filedir='word')
+    schedule.generate_schedule_with_pay(filedir='word')

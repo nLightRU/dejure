@@ -1,16 +1,17 @@
 """
-    Module with different utils
+    Module for handling data
 """
 
 import csv
 import sqlite3
+from pathlib import Path
 
 from typing import Dict
 
 db_path = r'data\\staff_db.db'
 
 
-def handle_csv():
+def handle_csv(p: Path):
     """
         CSV IN format
         LAST NAME FIRST NAME PATRON;BIRTH;JOB
@@ -24,7 +25,7 @@ def handle_csv():
             'patronymic': names[2].title()
         }
 
-    with open('staff_data.csv') as csv_in:
+    with open(p) as csv_in:
         reader = csv.DictReader(csv_in, delimiter=';')
         with open('staff.csv', 'w', newline='', encoding='utf-8') as csv_out:
             fieldnames = ['last_name', 'first_name', 'patronymic', 'birth', 'job']
@@ -92,6 +93,9 @@ class Database:
                     }
 
     def get_short_job(self, person: Dict) -> str:
+        """
+            Returns string with a short job from given Person
+        """
         job = person['job'].lower()
         short_jobs = ('тер', 'хир', 'гард', 'сес', 'уб', 'орт')
         for short_job in short_jobs:
@@ -102,6 +106,8 @@ class Database:
 if __name__ == '__main__':
     
     print('dejure module')
+
+    
             
     
     
