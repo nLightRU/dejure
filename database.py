@@ -40,6 +40,19 @@ def handle_csv(p: Path):
 class Database:
     def __init__(self, db_name):
         self.db_name = db_name
+        self.jobs_shorts = {
+            'медицинский регистратор': 'медрег.',
+            'заведующий отделением врач-стоматолог-хирург': 'хир.',
+            'врач-стоматолог-хирург': 'хир.',
+            'врач-стоматолог' : 'тер.', 
+            'медицинская сестра' : 'м,с',
+            'рентгенолаборант' : 'рентген.',
+            'врач-стоматолог-терапевт' : 'тер.',
+            'уборщик служебных помещений' : 'уб.',
+            'врач стоматолог - ортопед': 'орт',
+            'зубной врач': 'тер.',
+            'гардеробщик': 'гард.'
+        }
 
 
     def create_tables(self):
@@ -75,7 +88,10 @@ class Database:
 
         with sqlite3.connect(self.db_name) as conn:
             try:
-                last_name, first_name = search_str.split()
+                strings = search_str.split()
+                last_name, first_name = strings[0], ''
+                if len(strings) == 2:
+                    first_name = strings[1]
             except ValueError:
                 print(f'Error with {search_str}')
             cur = conn.cursor()
@@ -97,17 +113,21 @@ class Database:
             Returns string with a short job from given Person
         """
         job = person['job'].lower()
-        short_jobs = ('тер', 'хир', 'гард', 'сес', 'уб', 'орт')
-        for short_job in short_jobs:
-            if short_job in job:
-                return 'м/с.' if short_job == 'сес' else short_job + '.'
+        return self.jobs_shorts[job]
+        
             
 
 if __name__ == '__main__':
     
-    print('dejure module')
+    print('database module')
+    db = r'res\\staff_db.db'
+    with sqlite3.connect(db) as conn, open('staff_out.txt', 'w', encoding='utf-8') as out:
+        cur = conn.cursor()
+        rows = cur.execute('select * from staff').fetchall()
+        for row in rows:
+            s = ' '.join(map(str, row)) + '\n'
+            out.write(s)
 
-    
             
     
     
